@@ -47,8 +47,8 @@ class Koin {
      */
     @JvmOverloads
     inline fun <reified T> inject(
-        qualifier: Qualifier? = null,
-        noinline parameters: ParametersDefinition? = null
+            qualifier: Qualifier? = null,
+            noinline parameters: ParametersDefinition? = null
     ): Lazy<T> = rootScope.inject(qualifier, parameters)
 
     /**
@@ -61,8 +61,8 @@ class Koin {
      */
     @JvmOverloads
     inline fun <reified T> injectOrNull(
-        qualifier: Qualifier? = null,
-        noinline parameters: ParametersDefinition? = null
+            qualifier: Qualifier? = null,
+            noinline parameters: ParametersDefinition? = null
     ): Lazy<T?> = rootScope.injectOrNull(qualifier, parameters)
 
     /**
@@ -73,8 +73,8 @@ class Koin {
      */
     @JvmOverloads
     inline fun <reified T> get(
-        qualifier: Qualifier? = null,
-        noinline parameters: ParametersDefinition? = null
+            qualifier: Qualifier? = null,
+            noinline parameters: ParametersDefinition? = null
     ): T = rootScope.get(qualifier, parameters)
 
     /**
@@ -87,8 +87,8 @@ class Koin {
      */
     @JvmOverloads
     inline fun <reified T> getOrNull(
-        qualifier: Qualifier? = null,
-        noinline parameters: ParametersDefinition? = null
+            qualifier: Qualifier? = null,
+            noinline parameters: ParametersDefinition? = null
     ): T? = rootScope.getOrNull(qualifier, parameters)
 
     /**
@@ -101,9 +101,9 @@ class Koin {
      * @return instance of type T
      */
     fun <T> get(
-        clazz: KClass<*>,
-        qualifier: Qualifier?,
-        parameters: ParametersDefinition?
+            clazz: KClass<*>,
+            qualifier: Qualifier?,
+            parameters: ParametersDefinition?
     ): T = rootScope.get(clazz, qualifier, parameters)
 
 
@@ -111,15 +111,18 @@ class Koin {
      * Declare a component definition from the given instance
      * This result of declaring a single definition of type T, returning the given instance
      *
-     * @param instance
-     * @param qualifier
+     * @param instance The instance you're declaring.
+     * @param qualifier Qualifier for this declaration
+     * @param secondaryTypes List of secondary bound types
+     * @param override Allows to override a previous declaration of the same type (default to false).
      */
     inline fun <reified T> declare(
-        instance: T,
-        qualifier: Qualifier? = null,
-        secondaryTypes: List<KClass<*>>? = null
+            instance: T,
+            qualifier: Qualifier? = null,
+            secondaryTypes: List<KClass<*>>? = null,
+            override: Boolean = false
     ) {
-        rootScope.declare(instance, qualifier,secondaryTypes)
+        rootScope.declare(instance, qualifier, secondaryTypes, override)
     }
 
     /**
@@ -135,8 +138,8 @@ class Koin {
      *
      * @return instance of type S
      */
-    inline fun <reified P, reified S> bind(noinline parameters: ParametersDefinition? = null): S =
-        rootScope.bind<P, S>(parameters)
+    inline fun <reified S, reified P> bind(noinline parameters: ParametersDefinition? = null): S =
+            rootScope.bind<S, P>(parameters)
 
     /**
      * Get instance of primary type P and secondary type S
@@ -145,9 +148,9 @@ class Koin {
      * @return instance of type S
      */
     fun <S> bind(
-        primaryType: KClass<*>,
-        secondaryType: KClass<*>,
-        parameters: ParametersDefinition? = null
+            primaryType: KClass<*>,
+            secondaryType: KClass<*>,
+            parameters: ParametersDefinition? = null
     ): S = rootScope.bind(primaryType, secondaryType, parameters)
 
     internal fun createEagerInstances() = rootScope.createEagerInstances()

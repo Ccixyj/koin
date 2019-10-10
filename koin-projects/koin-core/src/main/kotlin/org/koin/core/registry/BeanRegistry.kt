@@ -17,13 +17,13 @@ package org.koin.core.registry
 
 import org.koin.core.KoinApplication.Companion.logger
 import org.koin.core.definition.BeanDefinition
-import org.koin.core.definition.Kind
 import org.koin.core.error.DefinitionOverrideException
 import org.koin.core.error.NoBeanDefFoundException
 import org.koin.core.logger.Level
 import org.koin.core.module.Module
 import org.koin.core.qualifier.Qualifier
 import org.koin.ext.getFullName
+import org.koin.ext.saveCache
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 
@@ -124,7 +124,11 @@ class BeanRegistry {
         val secondaryTypeDefinitions: ArrayList<BeanDefinition<*>> = definitionsSecondaryTypes[type]
                 ?: createSecondaryType(type)
 
-        secondaryTypeDefinitions.add(definition)
+        if (definition in secondaryTypeDefinitions){
+            secondaryTypeDefinitions[secondaryTypeDefinitions.indexOf(definition)] = definition
+        } else {
+            secondaryTypeDefinitions.add(definition)
+        }
         if (logger.isAt(Level.INFO)) {
             logger.info("bind secondary type:'${type.getFullName()}' ~ $definition")
         }
@@ -132,6 +136,7 @@ class BeanRegistry {
 
     private fun createSecondaryType(type: KClass<*>): ArrayList<BeanDefinition<*>> {
         definitionsSecondaryTypes[type] = arrayListOf()
+        type.saveCache()
         return definitionsSecondaryTypes[type]!!
     }
 
@@ -144,6 +149,7 @@ class BeanRegistry {
         if (!added && !definition.options.override) {
             throw DefinitionOverrideException("Already existing definition or try to override an existing one: $definition")
         }
+        definition.primaryType.saveCache()
     }
 
     private fun saveDefinitionForTypes(definition: BeanDefinition<*>) {
@@ -215,12 +221,15 @@ class BeanRegistry {
      * @param clazz
      */
     fun findDefinition(
-        qualifier: Qualifier? = null,
-        clazz: KClass<*>
-    ): BeanDefinition<*>? =
-            qualifier?.let { findDefinitionByName(it.toString()) }
-                    ?: findDefinitionByType(clazz)
-                    ?: findDefinitionBySecondaryType(clazz)
+            qualifier: Qualifier? = null,
+            clazz: KClass<*>
+    ): BeanDefinition<*>? {
+        return if (qualifier != null) {
+            findDefinitionByName(qualifier.toString())
+        } else {
+            findDefinitionByType(clazz) ?: findDefinitionBySecondaryType(clazz)
+        }
+    }
 
     //TODO Find with secondary type
 
@@ -274,5 +283,5 @@ class BeanRegistry {
      * Find all definition compatible with given type
      */
     fun getDefinitionsForClass(clazz: KClass<*>) = getAllDefinitions()
-            .filter { it.primaryType == clazz || it.secondaryTypes.contains(clazz) && !it.isKind(Kind.Scope) }
+            .filter { it.primaryType == clazz || it.secondaryTypes.contains(clazz) && !it.hasScopeSet() }
 }

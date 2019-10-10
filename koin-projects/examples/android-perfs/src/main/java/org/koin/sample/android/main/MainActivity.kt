@@ -10,6 +10,7 @@ import org.koin.core.time.measureDuration
 import org.koin.dsl.koinApplication
 import org.koin.perfs.Perfs
 import org.koin.perfs.perfModule400
+import org.koin.perfs.perfModule400Ext
 import org.koin.sample.android.R
 
 class MainActivity : AppCompatActivity() {
@@ -44,9 +45,9 @@ class MainActivity : AppCompatActivity() {
 
         val (_, executionDuration) = measureDuration {
             koin.get<Perfs.A27>()
-            koin.get<Perfs.B31>()
-            koin.get<Perfs.C12>()
-            koin.get<Perfs.D42>()
+            koin.get<Perfs.A31>()
+            koin.get<Perfs.A12>()
+            koin.get<Perfs.A42>()
         }
         println("[$count] measured executed in $executionDuration ms")
         app.close()
